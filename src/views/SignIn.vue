@@ -57,7 +57,7 @@
 import authorizationAPI from './../apis/authorization'
 import { Toast } from './../utils/helpers'
 export default {
-  data () {
+  data() {
     return {
       email: '',
       password: '',
@@ -65,7 +65,7 @@ export default {
     }
   },
   methods: {
-    async handleSubmit () {
+    async handleSubmit() {
       try {
         if (!this.email || !this.password) {
           Toast.fire({
@@ -87,6 +87,7 @@ export default {
           throw new Error(data.message)
         }
         localStorage.setItem('token', data.token)
+        this.$store.commit('setCurrentUser', data.user)
         this.$router.push('/restaurants')
       } catch (error) {
         // 將密碼欄位清空

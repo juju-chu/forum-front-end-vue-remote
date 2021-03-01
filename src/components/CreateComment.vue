@@ -8,15 +8,16 @@
       <button type="button" class="btn btn-link" @click="$router.back()">
         回上一頁
       </button>
-      <button type="submit" class="btn btn-primary mr-0">
-        Submit
-      </button>
+      <button type="submit" class="btn btn-primary mr-0">Submit</button>
     </div>
   </form>
 </template>
 
 <script>
-import { v4 as uuidv4 } from 'uuid'
+import restaurantsAPI from './../apis/restaurants'
+import { Toast } from './../utils/helpers'
+import { mapState } from 'vuex'
+
 export default {
   name: 'CreateComment',
   props: {
@@ -25,17 +26,32 @@ export default {
       required: true,
     },
   },
-  data() {
+  data () {
     return {
       text: '',
     }
   },
+  computed: {
+    ...mapState(['currentUser'])
+  },
   methods: {
-    handleSubmit() {
-      // TODO: 向 API 發送 POST 請求
+    async handleSubmit () {
+      try {
+        const { data } = await restaurantsAPI.createComment({ text: this.text, restaurantId: this.restaurantId })
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法新增評論，請稍候再試'
+        })
+      }
+
       // 伺服器新增 Comment 成功後...
       this.$emit('after-create-comment', {
-        commentId: uuidv4(), // 尚未串接 API 暫時使用隨機的 id
+        commentId: this.currentUser.id,
         restaurantId: this.restaurantId,
         text: this.text,
       })

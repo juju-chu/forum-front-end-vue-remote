@@ -75,7 +75,6 @@ export default {
     async fetchUser () {
       try {
         const { data } = await adminAPI.users.get()
-        console.log('data: ', data)
         this.users = data.users.map((user) => {
           if (user.id === this.currentUser.id) {
             return {

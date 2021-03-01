@@ -10,7 +10,7 @@
       <img
         class="img-responsive center-block"
         :src="restaurant.image | emptyImage"
-        style="width: 250px;margin-bottom: 25px;"
+        style="width: 250px; margin-bottom: 25px"
       />
       <div class="contact-info-wrap">
         <ul class="list-unstyled">
@@ -41,7 +41,8 @@
         type="button"
         class="btn btn-danger btn-border mr-2"
         v-if="restaurant.isFavorited"
-        @click.prevent.stop="deleteFavorite"
+        @click.prevent.stop="deleteFavorite(restaurant.id)"
+        :disabled="isFavoriteProcessing"
       >
         移除最愛
       </button>
@@ -49,7 +50,8 @@
         type="button"
         class="btn btn-primary btn-border mr-2"
         v-else
-        @click.prevent.stop="addFavorite"
+        @click.prevent.stop="addFavorite(restaurant.id)"
+        :disabled="isFavoriteProcessing"
       >
         加到最愛
       </button>
@@ -57,7 +59,8 @@
         type="button"
         class="btn btn-danger like mr-2"
         v-if="restaurant.isLiked"
-        @click.prevent.stop="deleteLike"
+        @click.prevent.stop="deleteLike(restaurant.id)"
+        :disabled="isLikeProcessing"
       >
         Unlike
       </button>
@@ -65,7 +68,8 @@
         type="button"
         class="btn btn-primary like mr-2"
         v-else
-        @click.prevent.stop="addLike"
+        @click.prevent.stop="addLike(restaurant.id)"
+        :disabled="isLikeProcessing"
       >
         Like
       </button>
@@ -75,6 +79,9 @@
 
 <script>
 import { emptyImageFilter } from './../utils/mixins'
+import restaurantsAPI from './../apis/restaurants'
+import { Toast } from './../utils/helpers'
+
 export default {
   mixins: [emptyImageFilter],
   props: {
@@ -83,23 +90,89 @@ export default {
       required: true,
     },
   },
-  data() {
+  data () {
     return {
       restaurant: this.initialRestaurant,
+      isFavoriteProcessing: false,
+      isLikeProcessing: false,
+    }
+  },
+  watch: {
+    initialRestaurant (newValue) {
+      this.restaurant = {
+        ...this.restaurant,
+        ...newValue
+      }
     }
   },
   methods: {
-    addFavorite() {
-      this.restaurant.isFavorited = true
+    async addFavorite (restaurantId) {
+      this.isFavoriteProcessing = true
+      try {
+        const { data } = await restaurantsAPI.addFavorite(restaurantId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.restaurant.isFavorited = true
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法加入最愛，請稍後再試'
+        })
+      }
+      this.isFavoriteProcessing = false
     },
-    deleteFavorite() {
-      this.restaurant.isFavorited = false
+    async deleteFavorite (restaurantId) {
+      this.isFavoriteProcessing = true
+      try {
+        const { data } = await restaurantsAPI.deleteFavorite(restaurantId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.restaurant.isFavorited = false
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法移除最愛，請稍後再試'
+        })
+      }
+      this.isFavoriteProcessing = false
     },
-    addLike() {
-      this.restaurant.isLiked = true
+    async addLike (restaurantId) {
+      this.isLikeProcessing = true
+      try {
+        const { data } = await restaurantsAPI.addLike(restaurantId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.restaurant.isLiked = true
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法按讚，請稍後再試'
+        })
+      }
+      this.isLikeProcessing = false
     },
-    deleteLike() {
-      this.restaurant.isLiked = false
+    async deleteLike (restaurantId) {
+      this.isLikeProcessing = true
+      try {
+        const { data } = await restaurantsAPI.deleteLike(restaurantId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.restaurant.isLiked = false
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法取消讚，請稍後再試'
+        })
+      }
+      this.isLikeProcessing = false
     },
   },
 }

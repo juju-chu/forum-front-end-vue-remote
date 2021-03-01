@@ -60,6 +60,9 @@
 
 <script>
 import { emptyImageFilter } from './../utils/mixins'
+import usersAPI from './../apis/users'
+import { Toast } from './../utils/helpers'
+
 export default {
   name: 'UserProfileCard',
   mixins: [emptyImageFilter],
@@ -77,5 +80,55 @@ export default {
       required: true,
     },
   },
+  data () {
+    return {
+      isFollowed: this.initialIsFollowed,
+      isProcessing: false
+    }
+  },
+  watch: {
+    initialIsFollowed (newValue) {
+      this.isFollowed = {
+        ...this.isFollowed,
+        ...newValue
+      }
+    }
+  },
+  methods: {
+    async addFollowing (userId) {
+      try {
+        this.isProcessing = true
+        const { data } = await usersAPI.addFollowing(userId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.isFollowed = true
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法追蹤，請稍後再試'
+        })
+      }
+      this.isProcessing = false
+    },
+    async deleteFollowing (userId) {
+      try {
+        this.isProcessing = true
+        const { data } = await usersAPI.deleteFollowing(userId)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.isFollowed = false
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法取消追蹤，請稍後再試'
+        })
+      }
+      this.isProcessing = false
+    }
+  }
 }
 </script>

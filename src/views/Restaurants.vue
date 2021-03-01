@@ -72,7 +72,6 @@ export default {
           page: queryPage,
           categoryId: queryCategoryId,
         })
-        console.log("response.data: ", response.data)
 
         const {
           restaurants,

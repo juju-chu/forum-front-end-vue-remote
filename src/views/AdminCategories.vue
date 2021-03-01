@@ -160,7 +160,9 @@ export default {
     async deleteCategory (categoryId) {
       try {
         const { data } = await adminAPI.categories.delete({ categoryId })
-        console.log('data: ', data)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
       } catch (error) {
         console.log(error)
         Toast.fire({

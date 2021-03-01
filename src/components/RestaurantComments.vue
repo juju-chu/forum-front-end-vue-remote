@@ -1,8 +1,6 @@
 <template>
   <div>
-    <h2 class="my-4">
-      所有評論：
-    </h2>
+    <h2 class="my-4">所有評論：</h2>
 
     <div v-for="comment in restaurantComments" :key="comment.id">
       <blockquote class="blockquote mb-0">
@@ -30,17 +28,11 @@
 </template>
 
 <script>
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: '管理者',
-    email: 'root@example.com',
-    image: 'https://i.pravatar.cc/300',
-    isAdmin: true,
-  },
-  isAuthenticated: true,
-}
+import { mapState } from 'vuex'
 import { fromNowFilter } from './../utils/mixins'
+import { Toast } from './../utils/helpers'
+import restaurantsAPI from './../apis/restaurants'
+
 export default {
   mixins: [fromNowFilter],
   props: {
@@ -49,14 +41,24 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      currentUser: dummyUser.currentUser,
-    }
+  computed: {
+    ...mapState(['currentUser'])
   },
   methods: {
-    handleDeleteButtonClick(commentId) {
-      this.$emit('after-delete-comment', commentId)
+    async handleDeleteButtonClick (commentId) {
+      try {
+        const { data } = await restaurantsAPI.deleteComment({ commentId })
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.$emit('after-delete-comment', commentId)
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法刪除評論，請稍後再試'
+        })
+      }
     },
   },
 }
