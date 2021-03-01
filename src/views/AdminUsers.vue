@@ -24,7 +24,7 @@
             <button
               type="button"
               class="btn btn-link"
-              @click.stop.prevent="toggleUserRole(user.id)"
+              @click.stop.prevent="toggleUserRole(user.id, user.isAdmin)"
             >
               <span v-show="user.isAdmin && user.id !== currentUser.id"
                 >set as user</span
@@ -42,20 +42,7 @@
 import AdminNav from './../components/AdminNav'
 import adminAPI from './../apis/admin'
 import { Toast } from './../utils/helpers'
-
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: '蠔嗲油',
-    email: 'root@example.com',
-    password: '$2a$10$jBS/Y4.hceDXkEC5y9ZGne81Y7i5wNwNcy6wAKjNdBykCzlEfWmLm',
-    isAdmin: true,
-    image: 'https://i.imgur.com/3keAGHT.jpeg',
-    createdAt: '2020-12-15T06:35:43.000Z',
-    updatedAt: '2021-02-22T16:41:47.000Z',
-  },
-  isAuthenticated: true,
-}
+import { mapState } from 'vuex'
 
 export default {
   name: 'AdminUsers',
@@ -65,11 +52,13 @@ export default {
   data () {
     return {
       users: [],
-      currentUser: {},
     }
   },
   created () {
     this.fetchUser()
+  },
+  computed: {
+    ...mapState(['currentUser'])
   },
   methods: {
     async fetchUser () {
@@ -89,18 +78,44 @@ export default {
           }
         })
       } catch (error) {
-        console.log
+        console.log(error)
         Toast.fire({
           icon: 'error',
           title: '無法取得使用者資料，請稍後再試'
         })
       }
-      this.currentUser = dummyUser.currentUser
 
     },
-    toggleUserRole (userId) {
+    async toggleUserRole (userId, userIsAdmin) {
+      try {
+        const { data } = await adminAPI.users.update({ userId, isAdmin: !userIsAdmin })
+        console.log('data: ', data)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+      } catch (error) {
+        console.log(error)
+        Toast.fire({
+          icon: 'error',
+          title: '無法修改，請稍後再試'
+        })
+      }
+      console.log('hi')
       this.users = this.users.map((user) => {
         if (userId === user.id) {
+          // try {
+          //   const { data } = await adminAPI.users.update({ userId, isAdmin: user.isAdmin })
+          //   console.log('data: ', data)
+          //   if (data.status !== 'success') {
+          //     throw new Error(data.message)
+          //   }
+          // } catch (error) {
+          //   console.log(error)
+          //   Toast.fire({
+          //     icon: 'error',
+          //     title: '無法修改，請稍後再試'
+          //   })
+          // }
           return {
             ...user,
             isAdmin: !user.isAdmin,
