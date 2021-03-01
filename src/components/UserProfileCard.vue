@@ -83,7 +83,7 @@ export default {
   data () {
     return {
       isFollowed: this.initialIsFollowed,
-      isProcessing: false
+      isProcessing: false,
     }
   },
   watch: {
