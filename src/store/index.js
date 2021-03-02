@@ -14,6 +14,7 @@ export default new Vuex.Store({
       isAdmin: false,
     },
     isAuthenticated: false,
+    token: '',
   },
   mutations: {
     setCurrentUser(state, currentUser) {
@@ -24,6 +25,13 @@ export default new Vuex.Store({
       }
       // 將使用者的登入狀態改為 true
       state.isAuthenticated = true
+      state.token = localStorage.getItem('token')
+    },
+    revokeAuthentication(state) {
+      state.currentUser = {}
+      state.isAuthenticated = false
+      localStorage.removeItem('token')
+      state.token = ''
     },
   },
   actions: {
@@ -32,9 +40,14 @@ export default new Vuex.Store({
         const { data } = await usersAPI.getCurrentUser()
         const { id, name, email, image, isAdmin } = data
         commit('setCurrentUser', { id, name, email, image, isAdmin })
+
+        return true
       } catch (error) {
         console.log('error', error)
         console.error('can not fetch user information')
+        commit('revokeAuthentication')
+
+        return false
       }
     },
   },
